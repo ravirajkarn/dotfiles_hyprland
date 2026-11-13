@@ -29,6 +29,7 @@ ShellRoot {
     property var tablet: Tablet
     property var nightShift: NightShift
     property var battery: Battery
+    property var networkSpeed: NetworkSpeed
     property var idle: Idle
     // The rotation sensor and helper run for this shell only, not for other configs that load Theme.
     Binding {

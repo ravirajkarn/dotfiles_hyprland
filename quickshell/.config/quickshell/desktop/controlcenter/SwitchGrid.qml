@@ -4,7 +4,7 @@ import ".."
 import "../components"
 import "../services"
 
-// The Control Center switches in a 2x2 grid: Do Not Disturb, Keep awake, Rotation lock (only with an
+// The Control Center switches in a 2x2 grid: Do Not Disturb, Keep awake, Airplane mode, Rotation lock (only with an
 // accelerometer, in tablet mode) and Night shift. The mode and temperature of Night shift, and the focus sessions of Do Not
 // Disturb, open below the grid, one at a time.
 ColumnLayout {
@@ -57,6 +57,15 @@ ColumnLayout {
         ToggleTile {
             Layout.fillWidth: true
             Layout.preferredWidth: 1
+            icon: "airplane"
+            title: I18n.tr("network.airplaneMode")
+            status: AirplaneMode.active ? I18n.tr("common.on") : I18n.tr("common.off")
+            checked: AirplaneMode.active
+            onToggled: AirplaneMode.toggle()
+        }
+        ToggleTile {
+            Layout.fillWidth: true
+            Layout.preferredWidth: 1
             visible: root.showRotation
             icon: Tablet.locked ? "rotate-lock" : "rotate"
             title: I18n.tr("tablet.rotationLock")
@@ -67,8 +76,8 @@ ColumnLayout {
         ToggleTile {
             Layout.fillWidth: true
             Layout.preferredWidth: 1
-            // Alone on the last row without the rotation tile: take its full width.
-            Layout.columnSpan: root.showRotation ? 1 : 2
+            // Spans the full width only when rotation is visible, making an odd number of tiles.
+            Layout.columnSpan: root.showRotation ? 2 : 1
             icon: "night"
             title: I18n.tr("nightShift.title")
             status: root.nightStatus()

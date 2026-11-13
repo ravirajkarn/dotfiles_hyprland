@@ -48,6 +48,34 @@ if [[ -x $qmllint ]]; then
         exit 1
     fi
 fi
+# Verify every file declared in quickshell qmldir files exists on disk
+while IFS= read -r -d '' qmldir; do
+    dir=$(dirname "$qmldir")
+    while IFS= read -r line; do
+        [[ -z "$line" || "$line" =~ ^# ]] && continue
+        target="$dir/${line##* }"
+        if [[ ! -f "$target" ]]; then
+            echo "check.sh: file $target declared in $qmldir does not exist" >&2
+            exit 1
+        fi
+    done < "$qmldir"
+done < <(find "$repo/quickshell" -name qmldir -print0)
+
+# Verify stow links for quickshell desktop if installed in user's config
+home_shell="${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/desktop"
+if [[ -f "$home_shell/shell.qml" ]]; then
+    missing=0
+    while IFS= read -r -d '' file; do
+        rel="${file#$repo/quickshell/.config/quickshell/desktop/}"
+        if [[ ! -e "$home_shell/$rel" ]]; then
+            echo "check.sh: missing symlink in $home_shell/$rel (run: python3 scripts/stow.py apply)" >&2
+            missing=1
+        fi
+    done < <(find "$repo/quickshell/.config/quickshell/desktop" -type f ! -name '*.pyc' -print0)
+    if [[ $missing -ne 0 ]]; then
+        exit 1
+    fi
+fi
 # Pure JS helpers of the shell (dock layout); offscreen, no compositor needed.
 qmltestrunner=$qt/qmltestrunner
 if [[ -x $qmltestrunner ]]; then

@@ -15,6 +15,8 @@ TestCase {
             "settings.options.dockEnabled": "Show the dock",
             "settings.options.dockIconSize": "Icon size",
             "settings.options.barMedia": "Media controls in the bar",
+            "settings.options.barNetworkSpeed": "Network speed",
+            "settings.options.trayIconSize": "Tray scaling",
             "settings.hints.workspaceScroll": "Scrolling over the bar switches workspace",
             "settings.options.workspaceScroll": "Scroll to switch workspace",
             "settings.search.keywords.sound": "volume, microphone, speaker, output, input",

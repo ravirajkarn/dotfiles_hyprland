@@ -12,6 +12,8 @@
 const options = [
     // Desktop
     { key: "barMedia", section: "desktop", group: "bar", type: "bool", fallback: true },
+    { key: "barNetworkSpeed", section: "desktop", group: "bar", type: "bool", fallback: true },
+    { key: "trayIconSize", section: "desktop", group: "bar", type: "number", fallback: 16, min: 12, max: 32, step: 2, unit: "px" },
     { key: "workspaceScroll", section: "desktop", group: "bar", type: "bool", fallback: true, hint: true },
     { key: "workspaceNumbers", section: "desktop", group: "bar", type: "bool", fallback: false, hint: true },
     { key: "minimumWorkspaces", section: "desktop", group: "bar", type: "number", fallback: 2, min: 1, max: 10, step: 1 },
@@ -44,6 +46,12 @@ const options = [
     { key: "oskPrediction", section: "keyboard", group: "osk", type: "bool", fallback: true, hint: true },
     { key: "oskLearning", section: "keyboard", group: "osk", type: "bool", fallback: true, hint: true },
     { key: "oskTouchStats", section: "keyboard", group: "osk", type: "bool", fallback: true, hint: true },
+    // Mouse and touchpad
+    { key: "mouseSensitivity", section: "mouse", group: "mouse", type: "number", fallback: 0, min: -1, max: 1, step: 0.1, hint: true, noReset: true },
+    { key: "touchpadSensitivity", section: "mouse", group: "touchpad", type: "number", fallback: 0, min: -1, max: 1, step: 0.1, hint: true, noReset: true },
+    { key: "touchpadNaturalScroll", section: "mouse", group: "touchpad", type: "bool", fallback: true, noReset: true },
+    { key: "touchpadTapToClick", section: "mouse", group: "touchpad", type: "bool", fallback: false, noReset: true },
+    { key: "touchpadScrollFactor", section: "mouse", group: "touchpad", type: "number", fallback: 1, min: 0.2, max: 3, step: 0.1, unit: "×", noReset: true },
     // Tablet and touch
     { key: "touchScale", section: "tablet", group: "touch", type: "number", fallback: 1.25, min: 1, max: 1.6, step: 0.05, unit: "×", hint: true },
     { key: "assistLongPress", section: "tablet", group: "touch", type: "choice", fallback: "keyboard", assist: true,

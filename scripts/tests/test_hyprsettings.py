@@ -89,6 +89,35 @@ class RenderTests(unittest.TestCase):
             self.assertTrue(hyprsettings.write('', target))
             self.assertFalse(target.exists())
 
+    def test_mouse_and_touchpad_sensitivity(self):
+        text, skipped = hyprsettings.render({
+            'mouseSensitivity': 0.2,
+            'touchpadSensitivity': -0.1,
+            'touchpadNaturalScroll': True,
+            'touchpadTapToClick': True,
+            'touchpadScrollFactor': 1.5,
+        }, touchpads=['elan-touchpad'])
+        self.assertEqual(skipped, [])
+        self.assertIn('hl.config({ input = { sensitivity = 0.2, touchpad = { natural_scroll = true, tap_to_click = true, scroll_factor = 1.5 } } })', text)
+        self.assertIn('hl.device({ name = "elan-touchpad", sensitivity = -0.1 })', text)
+
+    def test_mouse_sensitivity_alone_pins_touchpads_to_zero(self):
+        text, skipped = hyprsettings.render({'mouseSensitivity': 0.4}, touchpads=['syna-touchpad'])
+        self.assertEqual(skipped, [])
+        self.assertIn('hl.config({ input = { sensitivity = 0.4 } })', text)
+        self.assertIn('hl.device({ name = "syna-touchpad", sensitivity = 0 })', text)
+
+    def test_invalid_pointer_options_skipped(self):
+        text, skipped = hyprsettings.render({
+            'mouseSensitivity': 5.0,
+            'touchpadSensitivity': 'fast',
+            'touchpadNaturalScroll': 'yes',
+            'touchpadTapToClick': 123,
+            'touchpadScrollFactor': -2,
+        })
+        self.assertEqual(text, '')
+        self.assertEqual(sorted(skipped), ['mouseSensitivity', 'touchpadNaturalScroll', 'touchpadScrollFactor', 'touchpadSensitivity', 'touchpadTapToClick'])
+
     def test_settings_come_from_shell_json(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'shell.json'

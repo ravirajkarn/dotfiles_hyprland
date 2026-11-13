@@ -16,6 +16,7 @@ Overlay {
             doNotDisturb: "FocusControl.qml",
             idle: "IdleControl.qml",
             rotation: "RotationControl.qml",
+            airplaneMode: "AirplaneControl.qml",
             switches: "SwitchGrid.qml"
         })
     onOpened: header.closeButton.forceActiveFocus()

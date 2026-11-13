@@ -237,9 +237,16 @@ ColumnLayout {
                             tone: "state"
                             onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
                         }
+                        ActionButton {
+                            iconName: "airplane"
+                            text: I18n.tr("network.airplaneMode")
+                            highlighted: AirplaneMode.active
+                            tone: "state"
+                            onClicked: AirplaneMode.toggle()
+                        }
                         // Wi-Fi on the left, the connectivity on the right.
                         Text {
-                            text: I18n.networkDescription(NetworkConnectivity.toString(Networking.connectivity))
+                            text: AirplaneMode.active ? I18n.tr("network.airplaneModeOn") : I18n.networkDescription(NetworkConnectivity.toString(Networking.connectivity))
                             color: Theme.muted
                             font.pixelSize: Theme.textSize(11)
                             Layout.fillWidth: true
@@ -533,6 +540,28 @@ ColumnLayout {
                             outlined: true
                             text: I18n.tr("common.cancel")
                             onClicked: root.cancelPassword()
+                        }
+                    }
+                }
+                GroupCard {
+                    Layout.fillWidth: true
+                    verticalPadding: 10
+                    leftPadding: 12
+                    rightPadding: 12
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 12
+                        Text {
+                            Layout.fillWidth: true
+                            text: I18n.tr("settings.options.barNetworkSpeed")
+                            color: Theme.text
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textSize(13)
+                        }
+                        ControlSwitch {
+                            checked: Config.barNetworkSpeed
+                            Accessible.name: I18n.tr("settings.options.barNetworkSpeed")
+                            onToggled: Config.set("barNetworkSpeed", checked, true)
                         }
                     }
                 }

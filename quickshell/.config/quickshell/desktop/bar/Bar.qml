@@ -206,6 +206,29 @@ PanelWindow {
             Layout.fillWidth: true
             visible: bar.width <= 1100
         }
+        BarButton {
+            id: networkSpeedButton
+            visible: Config.barNetworkSpeed
+            implicitWidth: networkSpeedContent.implicitWidth + leftPadding + rightPadding
+            tooltip: I18n.tr("network.speedTooltip", [NetworkSpeed.downFormatted, NetworkSpeed.upFormatted])
+            Accessible.name: I18n.tr("network.speedAccessible", [NetworkSpeed.downFormatted, NetworkSpeed.upFormatted])
+            onClicked: ShellState.toggle("network", bar.screen)
+            TapHandler {
+                acceptedButtons: Qt.RightButton
+                onTapped: ShellState.toggle("controls", bar.screen)
+            }
+            contentItem: RowLayout {
+                id: networkSpeedContent
+                spacing: 6
+                Text {
+                    text: NetworkSpeed.text
+                    font: networkSpeedButton.font
+                    color: networkSpeedButton.foreground
+                    verticalAlignment: Text.AlignVCenter
+                    textFormat: Text.PlainText
+                }
+            }
+        }
         Repeater {
             model: SystemTray.items
             Item {
@@ -213,15 +236,22 @@ PanelWindow {
                 required property var modelData
                 // Passive means nothing to show right now (udiskie with no removable device, for one).
                 visible: modelData.status !== Status.Passive
-                implicitWidth: Theme.hit(30)
-                implicitHeight: Theme.hit(30)
+                implicitWidth: Math.max(Theme.hit(30), Theme.hit(Config.trayIconSize + 8))
+                implicitHeight: Math.max(Theme.hit(30), Theme.hit(Config.trayIconSize + 8))
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: implicitWidth
+                Layout.preferredHeight: implicitHeight
                 Accessible.role: Accessible.Button
                 Accessible.name: modelData.tooltipTitle || modelData.title || modelData.id
                 Image {
                     anchors.centerIn: parent
-                    width: Theme.hit(16)
-                    height: Theme.hit(16)
+                    width: Theme.hit(Config.trayIconSize)
+                    height: Theme.hit(Config.trayIconSize)
                     source: trayItem.modelData.icon
+                    sourceSize: Qt.size(Theme.hit(Config.trayIconSize) * 2, Theme.hit(Config.trayIconSize) * 2)
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                    mipmap: true
                 }
                 MouseArea {
                     // A long press (touch) opens the menu like a right click; the release then does nothing.
@@ -300,6 +330,13 @@ PanelWindow {
                     }
                 }
             }
+        }
+        BarButton {
+            visible: AirplaneMode.active
+            iconName: "airplane"
+            tooltip: I18n.tr("network.airplaneModeOn")
+            Accessible.name: I18n.tr("network.airplaneMode")
+            onClicked: ShellState.toggle("controls", bar.screen)
         }
         BarButton {
             visible: Recording.running

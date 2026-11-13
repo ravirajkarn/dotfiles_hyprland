@@ -67,6 +67,27 @@ def available_modes():
             for monitor in monitors if isinstance(monitor, dict) and 'name' in monitor}
 
 
+def available_touchpads():
+    # Each connected touchpad's Hyprland device name; [] when none or outside Hyprland/Linux.
+    if os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):
+        try:
+            result = subprocess.run(['hyprctl', 'devices', '-j'], capture_output=True, text=True, timeout=5, check=True)
+            devices = json.loads(result.stdout)
+            found = [m['name'] for m in devices.get('mice', [])
+                     if isinstance(m, dict) and ('touchpad' in m.get('name', '').lower() or 'trackpad' in m.get('name', '').lower())]
+            if found:
+                return list(dict.fromkeys(found))
+        except (OSError, subprocess.SubprocessError, ValueError):
+            pass
+    try:
+        text = Path('/proc/bus/input/devices').read_text(encoding='utf-8')
+        names = re.findall(r'N:\s*Name="([^"]+)"', text)
+        found = [name.lower().replace(' ', '-') for name in names if 'touchpad' in name.lower() or 'trackpad' in name.lower()]
+        return list(dict.fromkeys(found))
+    except OSError:
+        return []
+
+
 def monitor_line(name, fields, available):
     # displays.configure(...) for one monitor, or None when something in it is not valid.
     if not OUTPUT.match(str(name)) or not isinstance(fields, dict):
@@ -92,9 +113,10 @@ def monitor_line(name, fields, available):
     return f'displays.configure({lua_string(name)}, {{ {", ".join(parts)} }})'
 
 
-def render(settings, available=None):
+def render(settings, available=None, touchpads=None):
     """The text of settings.lua, '' when nothing is set, and what was left out as not valid. available: each
-    monitor's modes (available_modes()); a monitor not in it is not checked against its modes."""
+    monitor's modes (available_modes()); a monitor not in it is not checked against its modes. touchpads:
+    connected touchpad names (available_touchpads()); checked when touchpad sensitivity is set."""
     available = available or {}
     lines, skipped = [], []
     if not isinstance(settings, dict):
@@ -136,6 +158,48 @@ def render(settings, available=None):
     if configured:
         lines.append('local displays = require("config.displays")')
         lines.extend(configured)
+    input_parts = []
+    mouse_sens = settings.get('mouseSensitivity')
+    if mouse_sens not in (None, ''):
+        if not isinstance(mouse_sens, bool) and isinstance(mouse_sens, (int, float)) and -1.0 <= mouse_sens <= 1.0:
+            input_parts.append(f'sensitivity = {format(float(mouse_sens), ".2g")}')
+        else:
+            skipped.append('mouseSensitivity')
+    touchpad_parts = []
+    natural_scroll = settings.get('touchpadNaturalScroll')
+    if natural_scroll is not None:
+        if isinstance(natural_scroll, bool):
+            touchpad_parts.append(f'natural_scroll = {"true" if natural_scroll else "false"}')
+        else:
+            skipped.append('touchpadNaturalScroll')
+    tap_to_click = settings.get('touchpadTapToClick')
+    if tap_to_click is not None:
+        if isinstance(tap_to_click, bool):
+            touchpad_parts.append(f'tap_to_click = {"true" if tap_to_click else "false"}')
+        else:
+            skipped.append('touchpadTapToClick')
+    scroll_factor = settings.get('touchpadScrollFactor')
+    if scroll_factor not in (None, ''):
+        if not isinstance(scroll_factor, bool) and isinstance(scroll_factor, (int, float)) and 0.1 <= scroll_factor <= 10:
+            touchpad_parts.append(f'scroll_factor = {format(float(scroll_factor), ".2g")}')
+        else:
+            skipped.append('touchpadScrollFactor')
+    if touchpad_parts:
+        input_parts.append(f'touchpad = {{ {", ".join(touchpad_parts)} }}')
+    if input_parts:
+        lines.append(f'hl.config({{ input = {{ {", ".join(input_parts)} }} }})')
+    touchpad_sens = settings.get('touchpadSensitivity')
+    if touchpad_sens not in (None, ''):
+        if not isinstance(touchpad_sens, bool) and isinstance(touchpad_sens, (int, float)) and -1.0 <= touchpad_sens <= 1.0:
+            devs = available_touchpads() if touchpads is None else touchpads
+            for dev in sorted(devs):
+                lines.append(f'hl.device({{ name = {lua_string(dev)}, sensitivity = {format(float(touchpad_sens), ".2g")} }})')
+        else:
+            skipped.append('touchpadSensitivity')
+    elif mouse_sens not in (None, '') and 'mouseSensitivity' not in skipped:
+        devs = available_touchpads() if touchpads is None else touchpads
+        for dev in sorted(devs):
+            lines.append(f'hl.device({{ name = {lua_string(dev)}, sensitivity = 0 }})')
     return (HEADER + '\n'.join(lines) + '\n') if lines else '', skipped
 
 
@@ -145,7 +209,13 @@ def from_shell_json(path=None):
         data = json.loads(path.read_text(encoding='utf-8'))
     except (OSError, ValueError):
         return {}
-    return data.get('hyprland', {}) if isinstance(data, dict) else {}
+    if not isinstance(data, dict):
+        return {}
+    settings = dict(data.get('hyprland', {}))
+    for key in ('mouseSensitivity', 'touchpadSensitivity', 'touchpadNaturalScroll', 'touchpadTapToClick', 'touchpadScrollFactor'):
+        if key in data:
+            settings[key] = data[key]
+    return settings
 
 
 def write(text, target=None):
@@ -172,7 +242,9 @@ def main():
     rendering = commands.add_parser('render')
     rendering.add_argument('--json')
     arguments = parser.parse_args()
-    settings = from_shell_json() if arguments.json is None else json.loads(arguments.json)
+    settings = from_shell_json()
+    if arguments.json is not None:
+        settings.update(json.loads(arguments.json))
     text, skipped = render(settings, available_modes())
     changed = write(text)
     if changed and os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):

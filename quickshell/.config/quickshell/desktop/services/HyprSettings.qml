@@ -19,6 +19,21 @@ Singleton {
     readonly property var binds: Array.isArray(current.binds) ? current.binds : []
     // Per monitor name: { mode, position, scale } as chosen in Settings → Displays.
     readonly property var monitors: (current.monitors && typeof current.monitors === "object" && !Array.isArray(current.monitors)) ? current.monitors : ({})
+    // Mouse and touchpad options from Config (shell.json).
+    readonly property real mouseSensitivity: Config.mouseSensitivity
+    readonly property real touchpadSensitivity: Config.touchpadSensitivity
+    readonly property bool touchpadNaturalScroll: Config.touchpadNaturalScroll
+    readonly property bool touchpadTapToClick: Config.touchpadTapToClick
+    readonly property real touchpadScrollFactor: Config.touchpadScrollFactor
+    onMouseSensitivityChanged: render()
+    onTouchpadSensitivityChanged: render()
+    onTouchpadNaturalScrollChanged: render()
+    onTouchpadTapToClickChanged: render()
+    onTouchpadScrollFactorChanged: render()
+    function render() {
+        renderer.command = ["python3", Quickshell.env("HOME") + "/.local/libexec/desktop/hyprsettings.py", "render"];
+        renderer.request();
+    }
     // What hyprsettings.py left out as not valid, by name (keyboard, assistantLanguage, binds.N).
     property var skipped: []
     property string error: ""

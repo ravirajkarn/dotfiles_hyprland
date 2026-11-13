@@ -27,6 +27,34 @@ ColumnLayout {
         ColumnLayout {
             width: parent.width
             spacing: 18
+            GroupCard {
+                visible: AirplaneMode.active
+                Layout.fillWidth: true
+                verticalPadding: 8
+                leftPadding: 12
+                rightPadding: 12
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+                    Icon {
+                        name: "airplane"
+                        Layout.preferredWidth: 20
+                        Layout.preferredHeight: 20
+                        color: Theme.accent
+                    }
+                    Text {
+                        text: I18n.tr("network.airplaneModeOn")
+                        color: Theme.text
+                        font.pixelSize: Theme.textSize(12)
+                        Layout.fillWidth: true
+                    }
+                    ActionButton {
+                        text: I18n.tr("common.off")
+                        tone: "state"
+                        onClicked: AirplaneMode.setAirplaneMode(false)
+                    }
+                }
+            }
             Repeater {
                 model: Bluetooth.adapters
                 ColumnLayout {
@@ -58,8 +86,15 @@ ColumnLayout {
                             }
                             ControlSwitch {
                                 checked: adapterGroup.modelData.enabled
-                                enabled: ![BluetoothAdapterState.Blocked, BluetoothAdapterState.Enabling, BluetoothAdapterState.Disabling].includes(adapterGroup.modelData.state)
-                                onToggled: adapterGroup.modelData.enabled = checked
+                                enabled: ![BluetoothAdapterState.Enabling, BluetoothAdapterState.Disabling].includes(adapterGroup.modelData.state)
+                                onToggled: {
+                                    if (checked) {
+                                        AirplaneMode.unblockBluetooth();
+                                        adapterGroup.modelData.enabled = true;
+                                    } else {
+                                        adapterGroup.modelData.enabled = false;
+                                    }
+                                }
                                 Accessible.name: I18n.tr("osd.bluetooth", [adapterGroup.modelData.name])
                             }
                         }
@@ -164,12 +199,22 @@ ColumnLayout {
                     }
                 }
             }
-            Text {
+            ColumnLayout {
                 visible: Bluetooth.adapters.values.length === 0
-                text: I18n.tr("bluetooth.noAdapters")
-                color: Theme.muted
-                wrapMode: Text.Wrap
                 Layout.fillWidth: true
+                spacing: 10
+                Text {
+                    text: I18n.tr("bluetooth.noAdapters")
+                    color: Theme.muted
+                    wrapMode: Text.Wrap
+                    Layout.fillWidth: true
+                }
+                ActionButton {
+                    text: I18n.tr("bluetooth.turnOn")
+                    iconName: "bluetooth"
+                    tone: "state"
+                    onClicked: AirplaneMode.unblockBluetooth()
+                }
             }
         }
     }

@@ -95,7 +95,7 @@ Item {
             }
         }
         ActionButton {
-            visible: row.changed
+            visible: row.changed && !row.option.noReset && row.option.section !== "mouse"
             compact: true
             text: I18n.tr("settings.reset")
             tooltip: I18n.tr("settings.resetHint", [row.shown(row.option.fallback === "" ? "—" : row.option.fallback)])

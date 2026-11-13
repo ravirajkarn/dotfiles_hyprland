@@ -1,33 +1,30 @@
 import QtQuick
-import QtQuick.Layouts
 import Quickshell.Bluetooth
 import ".."
 import "../components"
+import "../services"
 
-ControlTile {
-    implicitHeight: Theme.hit(84)
+ToggleTile {
+    id: root
     readonly property int connected: Bluetooth.devices.values.filter(d => d.connected).length
-    ColumnLayout {
-        anchors {
-            fill: parent
-            margins: 10
-        }
-        spacing: 2
-        ActionButton {
-            Layout.fillWidth: true
-            alignLeft: true
-            iconName: "bluetooth"
-            text: I18n.tr("bluetooth.title")
-            tooltip: I18n.tr("bluetooth.devicesTitle")
-            onClicked: ShellState.push("bluetooth")
-        }
-        Text {
-            Layout.fillWidth: true
-            Layout.leftMargin: 12
-            text: !Bluetooth.defaultAdapter ? I18n.tr("common.unavailable") : !Bluetooth.defaultAdapter.enabled ? I18n.tr("common.off") : connected > 0 ? I18n.plural("bluetooth.connectedCount.one", "bluetooth.connectedCount.other", connected) : I18n.tr("common.on")
-            elide: Text.ElideRight
-            color: Theme.muted
-            font.pixelSize: Theme.textSize(11)
+    readonly property bool bluetoothOn: (Bluetooth.defaultAdapter?.enabled ?? false) && Bluetooth.adapters.values.length > 0
+    icon: "bluetooth"
+    title: I18n.tr("bluetooth.title")
+    status: !Bluetooth.defaultAdapter ? I18n.tr("common.unavailable") : !Bluetooth.defaultAdapter.enabled ? I18n.tr("common.off") : connected > 0 ? I18n.plural("bluetooth.connectedCount.one", "bluetooth.connectedCount.other", connected) : I18n.tr("common.on")
+    checked: root.bluetoothOn
+    available: Bluetooth.defaultAdapter !== null || Bluetooth.adapters.values.length > 0 || AirplaneMode.available
+    hasDetails: true
+    detailsIcon: "chevron-right"
+    onToggled: {
+        if (checked) {
+            if (Bluetooth.defaultAdapter)
+                Bluetooth.defaultAdapter.enabled = false;
+            AirplaneMode.blockBluetooth();
+        } else {
+            AirplaneMode.unblockBluetooth();
+            if (Bluetooth.defaultAdapter)
+                Bluetooth.defaultAdapter.enabled = true;
         }
     }
+    onDetailsRequested: ShellState.push("bluetooth")
 }

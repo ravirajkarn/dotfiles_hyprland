@@ -120,6 +120,10 @@ Singleton {
     readonly property string weatherCity: pick("weatherCity", "")
     // Bar: what plays, with play/pause on a click (MPRIS).
     readonly property bool barMedia: pick("barMedia", true)
+    // Bar: download and upload speed in real time.
+    readonly property bool barNetworkSpeed: pick("barNetworkSpeed", true)
+    // Bar: system tray icon size in pixels.
+    readonly property int trayIconSize: pick("trayIconSize", 16)
     // Launcher: files in the home folder below the apps (fd, from three typed characters).
     readonly property bool launcherFiles: pick("launcherFiles", true)
     // Launcher: apps opened from it or the dock come first, by how often and how lately (services/Apps.qml).
@@ -163,6 +167,12 @@ Singleton {
     readonly property bool oskTouchStats: pick("oskTouchStats", true)
     // In tablet mode the shell hit targets (bar, buttons, switches, rows, dock icons) grow by this factor.
     readonly property real touchScale: pick("touchScale", 1.25)
+    // Mouse and touchpad (Settings → Mouse & Touchpad).
+    readonly property real mouseSensitivity: pick("mouseSensitivity", 0)
+    readonly property real touchpadSensitivity: pick("touchpadSensitivity", 0)
+    readonly property bool touchpadNaturalScroll: pick("touchpadNaturalScroll", true)
+    readonly property bool touchpadTapToClick: pick("touchpadTapToClick", false)
+    readonly property real touchpadScrollFactor: pick("touchpadScrollFactor", 1)
     // Order and presence of modules. Unknown names are ignored.
     readonly property var controlCenterModules: pick("controlCenterModules", ["network", "bluetooth", "brightness", "audio", "media", "switches"])
     readonly property int controlCenterWidth: pick("controlCenterWidth", 400)

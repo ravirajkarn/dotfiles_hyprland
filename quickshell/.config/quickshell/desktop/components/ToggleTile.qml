@@ -3,7 +3,7 @@ import QtQuick.Layouts
 import ".."
 
 // A square switch of the Control Center: icon, name and state. A tap toggles it; a tile with details shows
-// a chevron that opens them, as do a long press and a right click.
+// a chevron that opens them, as do a double click, a long press and a right click.
 Rectangle {
     id: root
     property string icon: ""
@@ -13,6 +13,7 @@ Rectangle {
     property bool available: true
     property bool hasDetails: false
     property bool detailsOpen: false
+    property string detailsIcon: ""
     signal toggled
     signal detailsRequested
     implicitHeight: Theme.hit(84)
@@ -64,6 +65,11 @@ Rectangle {
             color: Theme.muted
         }
     }
+    Timer {
+        id: singleClickTimer
+        interval: 250
+        onTriggered: root.toggled()
+    }
     MouseArea {
         property bool held: false
         anchors.fill: parent
@@ -73,15 +79,25 @@ Rectangle {
         onPressed: held = false
         onPressAndHold: {
             held = true;
+            singleClickTimer.stop();
             if (root.hasDetails)
                 root.detailsRequested();
+        }
+        onDoubleClicked: mouse => {
+            if (mouse.button === Qt.LeftButton && root.hasDetails) {
+                singleClickTimer.stop();
+                root.detailsRequested();
+            }
         }
         onClicked: mouse => {
             if (held)
                 return;
             if (mouse.button === Qt.RightButton) {
+                singleClickTimer.stop();
                 if (root.hasDetails)
                     root.detailsRequested();
+            } else if (root.hasDetails) {
+                singleClickTimer.restart();
             } else {
                 root.toggled();
             }
@@ -98,7 +114,7 @@ Rectangle {
         height: Theme.hit(40)
         Icon {
             anchors.centerIn: parent
-            name: root.detailsOpen ? "chevron-up" : "chevron-down"
+            name: root.detailsIcon !== "" ? root.detailsIcon : (root.detailsOpen ? "chevron-up" : "chevron-down")
             color: Theme.muted
             width: 16
             height: 16

@@ -3,6 +3,7 @@
 // Shell glyph (assets/icons/<name>.svg) to freedesktop symbolic icon names, first match wins. Used when the
 // shell icons come from the icon pack; a glyph whose names the pack lacks keeps the bundled drawing.
 var names = {
+    "airplane": ["airplane-mode-symbolic", "network-flightmode-on-symbolic"],
     "apps": ["view-app-grid-symbolic", "view-grid-symbolic"],
     "arrow-left": ["go-previous-symbolic", "go-left-symbolic"],
     "arrow-right": ["go-next-symbolic", "go-right-symbolic"],
@@ -53,6 +54,7 @@ var names = {
     "fog": ["weather-fog-symbolic"],
     "emoji": ["face-smile-big-symbolic", "face-smile-symbolic"],
     "monitor": ["video-display-symbolic"],
+    "mouse": ["input-mouse-symbolic", "input-touchpad-symbolic", "preferences-desktop-peripherals-symbolic"],
     "next": ["media-skip-forward-symbolic"],
     "night": ["night-light-symbolic", "weather-clear-night-symbolic"],
     "overview": ["view-dual-symbolic", "focus-windows-symbolic"],

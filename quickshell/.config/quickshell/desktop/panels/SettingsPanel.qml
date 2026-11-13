@@ -79,6 +79,12 @@ Overlay {
             unit: "assistant"
         },
         {
+            name: "mouse",
+            icon: "mouse",
+            labelKey: "settings.sections.mouse",
+            group: "input"
+        },
+        {
             name: "keyboard",
             icon: "keyboard",
             labelKey: "settings.sections.keyboard",
